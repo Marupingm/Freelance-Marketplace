@@ -30,4 +30,4 @@ export function useProductPurchase(productId: string) {
   }, [productId, session]);
 
   return { isPurchased, loading };
-} 
+} //  
