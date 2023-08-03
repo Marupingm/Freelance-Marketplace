@@ -107,3 +107,4 @@ productSchema.index({ rating: -1 });
 productSchema.index({ salesCount: -1 });
 
 export default mongoose.models.Product || mongoose.model<IProduct>('Product', productSchema); //  
+//  
