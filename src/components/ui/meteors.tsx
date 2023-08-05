@@ -70,4 +70,4 @@ export const Meteors = ({ number = 6, className }: MeteorProps) => {
       ))}
     </>
   );
-}; 
+}; //  
