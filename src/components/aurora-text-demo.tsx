@@ -6,4 +6,4 @@ export function AuroraTextDemo() {
       Ship <AuroraText>beautiful</AuroraText>
     </h1>
   );
-} 
+} //  
