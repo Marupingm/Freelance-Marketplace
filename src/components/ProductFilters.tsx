@@ -246,4 +246,4 @@ export const ProductFilters = memo(function ProductFilters(props: ProductFilters
       <ProductFiltersContent {...props} />
     </Suspense>
   );
-}); 
+}); //  
