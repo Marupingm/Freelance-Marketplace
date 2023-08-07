@@ -147,4 +147,4 @@ export function SearchBar() {
       <SearchBarContent />
     </Suspense>
   );
-} 
+} //  
