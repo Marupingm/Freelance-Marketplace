@@ -90,4 +90,4 @@ userSchema.methods.comparePassword = async function(candidatePassword: string): 
   }
 };
 
-export default mongoose.models.User || mongoose.model<IUser>('User', userSchema); 
+export default mongoose.models.User || mongoose.model<IUser>('User', userSchema); //  
