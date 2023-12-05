@@ -17,4 +17,4 @@ export function AuroraText({ children, className, ...props }: AuroraTextProps) {
       {children}
     </span>
   );
-} 
+} //  
