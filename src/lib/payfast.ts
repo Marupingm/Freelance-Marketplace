@@ -74,4 +74,4 @@ export function validatePayFastResponse(data: Record<string, string>): boolean {
 
   const generatedSignature = generateSignature(data);
   return receivedSignature === generatedSignature;
-} 
+} //  
