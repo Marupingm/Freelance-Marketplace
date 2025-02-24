@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/context/ThemeContext';
+import { signIn } from 'next-auth/react';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -23,21 +24,29 @@ export default function Register() {
     setError('');
     setLoading(true);
 
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
-      return;
-    }
-
     try {
+      // Validate passwords match
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match');
+        setLoading(false);
+        return;
+      }
+
+      // Validate password length
+      if (formData.password.length < 6) {
+        setError('Password must be at least 6 characters long');
+        setLoading(false);
+        return;
+      }
+
+      // Register the user
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: formData.email,
+          email: formData.email.toLowerCase(),
           password: formData.password,
           name: formData.name,
           role: formData.role,
@@ -50,8 +59,22 @@ export default function Register() {
         throw new Error(data.error || 'Registration failed');
       }
 
-      // Redirect to login page on success
-      router.push('/login?registered=true');
+      // After successful registration, sign in the user
+      const signInResult = await signIn('credentials', {
+        redirect: false,
+        email: formData.email.toLowerCase(),
+        password: formData.password,
+      });
+
+      if (signInResult?.error) {
+        throw new Error(signInResult.error);
+      }
+
+      // Redirect to dashboard based on user role
+      const dashboardPath = formData.role === 'freelancer' 
+        ? '/dashboard/freelancer' 
+        : '/dashboard';
+      router.push(dashboardPath);
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -65,6 +88,8 @@ export default function Register() {
       ...prev,
       [name]: value
     }));
+    // Clear error when user starts typing
+    setError('');
   };
 
   return (

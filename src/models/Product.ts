@@ -1,5 +1,12 @@
 import mongoose from 'mongoose';
 
+interface IReview {
+  rating: number;
+  comment: string;
+  reviewer: string;
+  date: Date;
+}
+
 export interface IProduct {
   title: string;
   description: string;
@@ -7,9 +14,33 @@ export interface IProduct {
   fileUrl: string;
   sellerId: mongoose.Types.ObjectId;
   category: string;
+  reviews: IReview[];
+  rating: number;
+  salesCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
+
+const reviewSchema = new mongoose.Schema<IReview>({
+  rating: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 5,
+  },
+  comment: {
+    type: String,
+    required: true,
+  },
+  reviewer: {
+    type: String,
+    required: true,
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
 const productSchema = new mongoose.Schema<IProduct>({
   title: {
@@ -40,6 +71,17 @@ const productSchema = new mongoose.Schema<IProduct>({
     required: [true, 'Please provide a category'],
     enum: ['Graphic', 'Link Building', 'Music & Animation', 'SEO & Research', 'Technology', 'Traffic'],
   },
+  reviews: [reviewSchema],
+  rating: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 5,
+  },
+  salesCount: {
+    type: Number,
+    default: 0,
+  },
 }, {
   timestamps: true,
 });
@@ -48,5 +90,7 @@ const productSchema = new mongoose.Schema<IProduct>({
 productSchema.index({ title: 'text', description: 'text' });
 productSchema.index({ category: 1 });
 productSchema.index({ sellerId: 1 });
+productSchema.index({ rating: -1 });
+productSchema.index({ salesCount: -1 });
 
 export default mongoose.models.Product || mongoose.model<IProduct>('Product', productSchema); 

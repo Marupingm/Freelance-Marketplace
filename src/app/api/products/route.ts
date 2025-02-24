@@ -6,13 +6,17 @@ import { authOptions } from '@/lib/auth';
 
 // GET /api/products - Get all products or filter by category
 export async function GET(req: Request) {
+  console.log('Fetching products...');
   try {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category');
     const search = searchParams.get('search');
     const sellerId = searchParams.get('sellerId');
+    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
 
+    console.log('Connecting to database...');
     await connectDB();
+    console.log('Connected to database');
 
     let query: any = {};
 
@@ -28,9 +32,19 @@ export async function GET(req: Request) {
       query.sellerId = sellerId;
     }
 
-    const products = await Product.find(query)
-      .populate('sellerId', 'name')
+    console.log('Executing query:', query);
+    let productsQuery = Product.find(query)
+      .populate('sellerId', 'name level')
       .sort({ createdAt: -1 });
+
+    // Apply limit if specified (used for homepage)
+    if (limit) {
+      productsQuery = productsQuery.limit(limit);
+    }
+
+    const products = await productsQuery;
+    
+    console.log(`Found ${products.length} products`);
 
     return NextResponse.json(products);
   } catch (error: any) {

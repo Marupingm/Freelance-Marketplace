@@ -6,6 +6,13 @@ export interface IUser {
   password: string;
   name: string;
   role: 'user' | 'freelancer';
+  level?: string;
+  profileImage?: string;
+  bio?: string;
+  skills?: string[];
+  totalEarnings?: number;
+  totalSales?: number;
+  averageRating?: number;
   createdAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
@@ -32,6 +39,27 @@ const userSchema = new mongoose.Schema<IUser>({
     type: String,
     enum: ['user', 'freelancer'],
     default: 'user',
+  },
+  level: {
+    type: String,
+    enum: ['Level 1', 'Level 2', 'Level 3', 'Level 4', 'Level 5'],
+  },
+  profileImage: String,
+  bio: String,
+  skills: [String],
+  totalEarnings: {
+    type: Number,
+    default: 0,
+  },
+  totalSales: {
+    type: Number,
+    default: 0,
+  },
+  averageRating: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 5,
   },
   createdAt: {
     type: Date,

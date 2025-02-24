@@ -1,51 +1,30 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Star, Heart, Search, PenTool, Building2, Music, Network, BarChart3 } from 'lucide-react';
 import { AuroraText } from "@/components/ui/aurora-text";
+import { useRouter } from 'next/navigation';
 
-const products = [
-  {
-    id: 1,
-    title: "Global Website Ranking Analysis",
-    price: 150.00,
-    image: "/images/google-analytics.jpg",
-    freelancer: {
-      name: "username",
-      level: "Level 5",
-      rating: 5,
-      likes: 1
-    },
-    favorites: 1,
-  },
-  {
-    id: 2,
-    title: "SEO-Driven Organic Search Growth",
-    price: 120.00,
-    image: "/images/seo-growth.jpg",
-    freelancer: {
-      name: "Abeersd",
-      level: "Level 3",
-      rating: 4,
-      likes: 1
-    },
-    favorites: 1,
-  },
-  {
-    id: 3,
-    title: "Comprehensive Website Database",
-    price: 100.00,
-    image: "/images/website-database.jpg",
-    freelancer: {
-      name: "zitouna",
-      level: "Level 4",
-      rating: 4.5,
-      likes: 0
-    },
-    favorites: 0,
-  },
-];
+// Price ranges in ZAR
+const PRICE_RANGES = {
+  MIN_PRICE: 499.99,
+  MAX_PRICE: 7999.99,
+};
+
+interface Product {
+  _id: string;
+  title: string;
+  price: number;
+  fileUrl: string;
+  sellerId: {
+    _id: string;
+    name: string;
+    level: string;
+  };
+  rating: number;
+  reviews: Array<{ rating: number }>;
+}
 
 const categories = [
   {
@@ -101,12 +80,43 @@ const features = [
 ];
 
 export default function IntegratedMarketplace() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('default');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState([30, 300]);
+  const [priceRange, setPriceRange] = useState([PRICE_RANGES.MIN_PRICE, PRICE_RANGES.MAX_PRICE]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        console.log('Fetching products from client...');
+        const response = await fetch('/api/products?limit=6');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('Products received:', data);
+        if (Array.isArray(data)) {
+          setProducts(data);
+        } else {
+          console.error('Invalid data format:', data);
+          setError('Invalid data format received');
+        }
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load products');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
@@ -117,10 +127,18 @@ export default function IntegratedMarketplace() {
     }
   };
 
+  // simailar currency to implement
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: 'ZAR',
+    }).format(price);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-white pt-20 pb-16">
+      <div className="bg-white" style={{ paddingTop: '10rem', paddingBottom: '5rem' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-8">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900">
@@ -183,7 +201,7 @@ export default function IntegratedMarketplace() {
       </div>
 
       {/* Products Section with Filters */}
-      <div className="py-12 bg-gray-50">
+      <div className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row gap-8">
             {/* Sidebar Filters */}
@@ -241,26 +259,26 @@ export default function IntegratedMarketplace() {
                 <h3 className="font-semibold mb-3">Filter by Price</h3>
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="minPrice" className="text-sm text-gray-600">Min Price ($)</label>
+                    <label htmlFor="minPrice" className="text-sm text-gray-600">Min Price (R)</label>
                     <input
                       type="number"
                       id="minPrice"
                       value={priceRange[0]}
                       onChange={handlePriceChange}
-                      min="30"
-                      max="300"
+                      min={PRICE_RANGES.MIN_PRICE}
+                      max={PRICE_RANGES.MAX_PRICE}
                       className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
                   <div>
-                    <label htmlFor="maxPrice" className="text-sm text-gray-600">Max Price ($)</label>
+                    <label htmlFor="maxPrice" className="text-sm text-gray-600">Max Price (R)</label>
                     <input
                       type="number"
                       id="maxPrice"
                       value={priceRange[1]}
                       onChange={handlePriceChange}
-                      min="30"
-                      max="300"
+                      min={PRICE_RANGES.MIN_PRICE}
+                      max={PRICE_RANGES.MAX_PRICE}
                       className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
@@ -285,52 +303,88 @@ export default function IntegratedMarketplace() {
               </div>
 
               {/* Products Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {products.map((product) => (
-                  <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                    <div className="relative h-48">
-                      <Image
-                        src={product.image}
-                        alt={product.title}
-                        layout="fill"
-                        objectFit="cover"
-                        className="transition-transform duration-300 hover:scale-105"
-                      />
-                    </div>
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.title}</h3>
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center space-x-1">
-                          <span className="text-sm text-gray-600">{product.freelancer.name}</span>
-                          <span className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                            {product.freelancer.level}
-                          </span>
-                        </div>
-                        <div className="flex items-center">
-                          <Heart size={16} className="text-gray-400 mr-1" />
-                          <span className="text-sm text-gray-600">{product.favorites}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              size={16}
-                              className={i < Math.floor(product.freelancer.rating) ? "text-yellow-400" : "text-gray-300"}
-                              fill={i < Math.floor(product.freelancer.rating) ? "currentColor" : "none"}
-                            />
-                          ))}
-                          <span className="ml-1 text-sm text-gray-600">({product.freelancer.likes})</span>
-                        </div>
-                        <span className="font-bold text-gray-900">${product.price.toFixed(2)}</span>
-                      </div>
-                      <button className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300">
-                        Order Now
-                      </button>
-                    </div>
+              <div className="min-h-[400px]">
+                {loading ? (
+                  <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
                   </div>
-                ))}
+                ) : error ? (
+                  <div className="text-center text-red-600 p-4 bg-red-50 rounded-lg">
+                    <p>{error}</p>
+                    <button 
+                      onClick={() => window.location.reload()} 
+                      className="mt-2 text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                ) : products.length === 0 ? (
+                  <div className="text-center text-gray-600 p-4">
+                    <p>No products found</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {products.map((product) => (
+                      <div 
+                        key={product._id} 
+                        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+                        onClick={() => router.push(`/products/${product._id}`)}
+                      >
+                        <div className="relative h-48">
+                          <Image
+                            src={product.fileUrl}
+                            alt={product.title}
+                            layout="fill"
+                            objectFit="cover"
+                            className="transition-transform duration-300 hover:scale-105"
+                          />
+                        </div>
+                        <div className="p-4">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.title}</h3>
+                          <div className="flex items-center justify-between mb-3">
+                            <div 
+                              className="flex items-center space-x-1 cursor-pointer hover:text-blue-600"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/freelancers/${product.sellerId._id}`);
+                              }}
+                            >
+                              <span className="text-sm text-gray-600 hover:text-blue-600">{product.sellerId.name}</span>
+                              <span className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                                {product.sellerId.level}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  size={16}
+                                  className={i < Math.floor(product.rating) ? "text-yellow-400" : "text-gray-300"}
+                                  fill={i < Math.floor(product.rating) ? "currentColor" : "none"}
+                                />
+                              ))}
+                              <span className="ml-1 text-sm text-gray-600">
+                                ({product.reviews.length})
+                              </span>
+                            </div>
+                            <span className="font-bold text-gray-900">{formatPrice(product.price)}</span>
+                          </div>
+                          <button 
+                            className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/products/${product._id}`);
+                            }}
+                          >
+                            Order Now
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </main>
           </div>
