@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTheme } from '@/context/ThemeContext';
 
 export default function Register() {
@@ -9,14 +10,53 @@ export default function Register() {
     email: '',
     password: '',
     confirmPassword: '',
-    fullName: '',
-    accountType: 'client'
+    name: '',
+    role: 'user'
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { theme } = useTheme();
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle registration logic here
+    setError('');
+    setLoading(true);
+
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+          role: formData.role,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      // Redirect to login page on success
+      router.push('/login?registered=true');
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -41,18 +81,25 @@ export default function Register() {
             </Link>
           </p>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border-l-4 border-red-400 p-4">
+            <p className="text-red-700">{error}</p>
+          </div>
+        )}
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm space-y-4">
             <div>
-              <label htmlFor="fullName" className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
+              <label htmlFor="name" className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
                 Full Name
               </label>
               <input
-                id="fullName"
-                name="fullName"
+                id="name"
+                name="name"
                 type="text"
                 required
-                value={formData.fullName}
+                value={formData.name}
                 onChange={handleChange}
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   theme === 'dark' 
@@ -62,6 +109,7 @@ export default function Register() {
                 placeholder="Enter your full name"
               />
             </div>
+
             <div>
               <label htmlFor="email" className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
                 Email address
@@ -82,6 +130,7 @@ export default function Register() {
                 placeholder="Enter your email"
               />
             </div>
+
             <div>
               <label htmlFor="password" className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
                 Password
@@ -101,6 +150,7 @@ export default function Register() {
                 placeholder="Create a password"
               />
             </div>
+
             <div>
               <label htmlFor="confirmPassword" className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
                 Confirm Password
@@ -120,14 +170,15 @@ export default function Register() {
                 placeholder="Confirm your password"
               />
             </div>
+
             <div>
-              <label htmlFor="accountType" className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
+              <label htmlFor="role" className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
                 Account Type
               </label>
               <select
-                id="accountType"
-                name="accountType"
-                value={formData.accountType}
+                id="role"
+                name="role"
+                value={formData.role}
                 onChange={handleChange}
                 className={`mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   theme === 'dark' 
@@ -135,7 +186,7 @@ export default function Register() {
                     : 'border-gray-300 text-gray-900'
                 }`}
               >
-                <option value="client">Client</option>
+                <option value="user">Client</option>
                 <option value="freelancer">Freelancer</option>
               </select>
             </div>
@@ -144,9 +195,12 @@ export default function Register() {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              disabled={loading}
+              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                loading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Create Account
+              {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </div>
         </form>
