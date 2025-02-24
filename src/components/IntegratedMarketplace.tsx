@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Star, Heart, Search, PenTool, Building2, Music, Network, BarChart3 } from 'lucide-react';
+import { Star, Heart, Search, PenTool, Building2, Music, Network, BarChart3, ShoppingCart } from 'lucide-react';
 import { AuroraText } from "@/components/ui/aurora-text";
 import { useRouter } from 'next/navigation';
+import { useCart } from '@/context/CartContext';
 
 // Price ranges in ZAR
 const PRICE_RANGES = {
@@ -81,6 +82,7 @@ const features = [
 
 export default function IntegratedMarketplace() {
   const router = useRouter();
+  const { state, dispatch } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('default');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -140,30 +142,47 @@ export default function IntegratedMarketplace() {
       {/* Hero Section */}
       <div className="bg-white" style={{ paddingTop: '10rem', paddingBottom: '5rem' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-8">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900">
-              Find Expert Freelancers<br />
-              <span className="text-blue-600 mt-2 block">
-                <AuroraText>For Your Next Project</AuroraText>
-              </span>
-            </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Connect with skilled professionals from around the world
-            </p>
+          <div className="relative">
+            {/* Cart Icon */}
+            <div className="absolute top-0 right-0">
+              <button
+                onClick={() => router.push('/cart')}
+                className="flex items-center gap-2 p-2 text-gray-600 hover:text-blue-600"
+              >
+                <ShoppingCart size={24} />
+                {state.items.length > 0 && (
+                  <span className="bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {state.items.length}
+                  </span>
+                )}
+              </button>
+            </div>
             
-            {/* Search Bar */}
-            <div className="max-w-3xl mx-auto">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <input
-                  type="text"
-                  placeholder="Search for skills, projects, or freelancers..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 px-6 py-4 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 shadow-sm font-medium">
-                  Search
-                </button>
+            <div className="text-center space-y-8">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900">
+                Find Expert Freelancers<br />
+                <span className="text-blue-600 mt-2 block">
+                  <AuroraText>For Your Next Project</AuroraText>
+                </span>
+              </h1>
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                Connect with skilled professionals from around the world
+              </p>
+              
+              {/* Search Bar */}
+              <div className="max-w-3xl mx-auto">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <input
+                    type="text"
+                    placeholder="Search for skills, projects, or freelancers..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-1 px-6 py-4 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 shadow-sm font-medium">
+                    Search
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -171,7 +190,7 @@ export default function IntegratedMarketplace() {
       </div>
 
       {/* Categories Section */}
-      <div className="py-12 bg-white">
+      <div style={{ paddingTop: '10rem', paddingBottom: '10rem' }} className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {categories.map((category) => (
@@ -201,7 +220,7 @@ export default function IntegratedMarketplace() {
       </div>
 
       {/* Products Section with Filters */}
-      <div className="py-12 bg-white">
+      <div style={{ paddingTop: '10rem', paddingBottom: '10rem' }} className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row gap-8">
             {/* Sidebar Filters */}
@@ -375,10 +394,13 @@ export default function IntegratedMarketplace() {
                             className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300"
                             onClick={(e) => {
                               e.stopPropagation();
-                              router.push(`/products/${product._id}`);
+                              dispatch({
+                                type: 'ADD_ITEM',
+                                payload: product
+                              });
                             }}
                           >
-                            Order Now
+                            Add to Cart
                           </button>
                         </div>
                       </div>

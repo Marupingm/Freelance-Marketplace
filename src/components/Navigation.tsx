@@ -2,10 +2,16 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { UserCircle, Menu, X } from 'lucide-react';
+import { UserCircle, Menu, X, ShoppingCart } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useCart } from '@/context/CartContext';
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { data: session } = useSession();
+  const router = useRouter();
+  const { state } = useCart();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b border-gray-200">
@@ -36,13 +42,50 @@ export default function Navigation() {
 
           {/* User Icon */}
           <div className="flex items-center space-x-4">
-            <Link 
-              href="/login" 
-              className="p-2 text-gray-600 hover:text-blue-600 transition-colors"
-              aria-label="Login"
+            {/* Cart Icon */}
+            <button
+              onClick={() => router.push('/cart')}
+              className="relative p-2 text-gray-600 hover:text-blue-600 transition-colors"
             >
-              <UserCircle className="h-6 w-6" />
-            </Link>
+              <ShoppingCart size={24} />
+              {state.items.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {state.items.length}
+                </span>
+              )}
+            </button>
+
+            {session ? (
+              <div className="flex items-center space-x-4">
+                <Link
+                  href={session.user.role === 'freelancer' ? '/dashboard/freelancer' : '/dashboard'}
+                  className="text-gray-600 hover:text-blue-600"
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={() => router.push('/api/auth/signout')}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link
+                  href="/login"
+                  className="text-gray-600 hover:text-blue-600"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/register"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Get Started
+                </Link>
+              </div>
+            )}
             
             {/* Mobile menu button */}
             <button
