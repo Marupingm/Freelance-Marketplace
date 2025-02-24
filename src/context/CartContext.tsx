@@ -38,14 +38,12 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
     case 'ADD_ITEM':
       // Check if item already exists
       if (state.items.some(item => item._id === action.payload._id)) {
-        toast.error('Item already in cart');
         return state;
       }
       newState = {
         items: [...state.items, action.payload],
         total: state.total + action.payload.price,
       };
-      toast.success('Added to cart');
       break;
 
     case 'REMOVE_ITEM':
@@ -54,7 +52,6 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         items: state.items.filter(item => item._id !== action.payload),
         total: state.total - (itemToRemove?.price || 0),
       };
-      toast.success('Removed from cart');
       break;
 
     case 'CLEAR_CART':
@@ -62,7 +59,6 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         items: [],
         total: 0,
       };
-      toast.success('Cart cleared');
       break;
 
     case 'LOAD_CART':
@@ -81,6 +77,28 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [], total: 0 });
 
+  // Wrap dispatch to handle notifications
+  const dispatchWithNotification = (action: CartAction) => {
+    dispatch(action);
+    
+    // Handle notifications after state update
+    switch (action.type) {
+      case 'ADD_ITEM':
+        if (!state.items.some(item => item._id === action.payload._id)) {
+          toast.success('Added to cart');
+        } else {
+          toast.error('Item already in cart');
+        }
+        break;
+      case 'REMOVE_ITEM':
+        toast.success('Removed from cart');
+        break;
+      case 'CLEAR_CART':
+        toast.success('Cart cleared');
+        break;
+    }
+  };
+
   // Load cart from localStorage on mount
   useEffect(() => {
     try {
@@ -95,7 +113,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <CartContext.Provider value={{ state, dispatch }}>
+    <CartContext.Provider value={{ state, dispatch: dispatchWithNotification }}>
       {children}
     </CartContext.Provider>
   );

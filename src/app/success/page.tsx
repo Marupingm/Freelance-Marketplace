@@ -2,64 +2,160 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Check, Download } from 'lucide-react';
+import { Check, Download, ShoppingBag, AlertCircle } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { toast } from 'react-hot-toast';
 
 interface OrderDetails {
   _id: string;
   status: string;
-  downloadUrl: string;
+  amount: number;
+  paymentToken: string;
+  productId: {
+    _id: string;
+    title: string;
+    fileUrl: string;
+  };
+  sellerId: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  createdAt: string;
 }
 
 export default function Success() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { data: session, status: authStatus } = useSession();
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [downloadStarted, setDownloadStarted] = useState(false);
 
   useEffect(() => {
-    const orderId = searchParams.get('order');
-    if (!orderId) {
-      router.push('/');
-      return;
-    }
-
     const fetchOrder = async () => {
       try {
-        const response = await fetch(`/api/orders/${orderId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch order');
+        setLoading(true);
+        setError(null);
+
+        // Get order ID and token from URL
+        const orderId = searchParams.get('order');
+        const token = searchParams.get('token');
+
+        if (!orderId || !token) {
+          setError('Invalid order information');
+          toast.error('Invalid order information');
+          setTimeout(() => router.push('/'), 3000);
+          return;
         }
+
+        // Check if user is authenticated
+        if (authStatus === 'unauthenticated') {
+          const currentUrl = window.location.href;
+          const callbackUrl = encodeURIComponent(currentUrl);
+          toast.error('Please log in to view your order');
+          router.push(`/login?callbackUrl=${callbackUrl}`);
+          return;
+        }
+
+        if (authStatus === 'loading') {
+          return;
+        }
+
+        const response = await fetch(`/api/orders/${orderId}?token=${token}`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch order');
+        }
+
         const data = await response.json();
+        
+        // Verify the payment token matches
+        if (data.paymentToken !== token) {
+          throw new Error('Invalid payment verification');
+        }
+
         setOrder(data);
+        toast.success('Order details loaded successfully');
       } catch (error) {
         console.error('Error fetching order:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load order details');
+        toast.error(error instanceof Error ? error.message : 'Failed to load order details');
       } finally {
         setLoading(false);
       }
     };
 
     fetchOrder();
-  }, [searchParams, router]);
+  }, [searchParams, router, authStatus]);
+
+  const handleDownload = async () => {
+    if (!order || downloadStarted) return;
+    
+    try {
+      setDownloadStarted(true);
+      toast.loading('Preparing download...');
+      
+      const response = await fetch(order.productId.fileUrl);
+      if (!response.ok) throw new Error('Failed to download file');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${order.productId.title}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success('Download started successfully');
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Failed to download file. Please try again.');
+    } finally {
+      setDownloadStarted(false);
+    }
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: 'ZAR',
+    }).format(price);
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your order details...</p>
+        </div>
       </div>
     );
   }
 
-  if (!order) {
+  if (error || !order) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Order not found</h2>
-          <button
-            onClick={() => router.push('/')}
-            className="mt-6 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Return to Home
-          </button>
+      <div className="min-h-screen bg-gray-50" style={{ paddingTop: '10rem', paddingBottom: '10rem' }}>
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="p-8 text-center">
+              <div className="flex items-center justify-center mb-6">
+                <AlertCircle className="w-12 h-12 text-red-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Order Error</h2>
+              <p className="text-gray-600 mb-6">{error || 'We couldn\'t find the order you\'re looking for.'}</p>
+              <button
+                onClick={() => router.push('/')}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Return to Home
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -84,28 +180,65 @@ export default function Success() {
             </p>
 
             <div className="bg-gray-50 rounded-lg p-6 mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Download Your Products</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Details</h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-white rounded-lg">
-                  <span className="text-gray-900">Demo Product Package</span>
-                  <a
-                    href="https://example.com/demo-product.zip"
-                    download
-                    className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
-                  >
-                    <Download size={20} />
-                    Download
-                  </a>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Order ID:</span>
+                  <span className="text-gray-900">{order._id}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Date:</span>
+                  <span className="text-gray-900">
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Total Amount:</span>
+                  <span className="text-gray-900">{formatPrice(order.amount)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Status:</span>
+                  <span className="text-green-600 font-semibold">
+                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className="text-center">
+            <div className="bg-gray-50 rounded-lg p-6 mb-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Download Your Products</h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-white rounded-lg">
+                  <span className="text-gray-900">{order.productId.title}</span>
+                  <button
+                    onClick={handleDownload}
+                    disabled={downloadStarted}
+                    className={`flex items-center gap-2 ${
+                      downloadStarted 
+                        ? 'text-gray-400 cursor-not-allowed' 
+                        : 'text-blue-600 hover:text-blue-700'
+                    }`}
+                  >
+                    <Download size={20} />
+                    {downloadStarted ? 'Downloading...' : 'Download'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4 justify-center">
               <button
                 onClick={() => router.push('/dashboard')}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
               >
+                <ShoppingBag size={20} />
                 View Order History
+              </button>
+              <button
+                onClick={() => router.push('/')}
+                className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Continue Shopping
               </button>
             </div>
           </div>

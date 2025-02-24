@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import connectDB from '@/lib/db';
+import Order from '@/models/Order';
+import crypto from 'crypto';
 
 const PAYFAST_MERCHANT_ID = process.env.PAYFAST_MERCHANT_ID!;
 const PAYFAST_MERCHANT_KEY = process.env.PAYFAST_MERCHANT_KEY!;
@@ -22,8 +25,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid cart items' }, { status: 400 });
     }
 
+    await connectDB();
+
     // Generate a unique order ID
     const orderId = `ORDER-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+
+    // Create a payment token that includes user information
+    const paymentToken = crypto
+      .createHash('sha256')
+      .update(`${session.user.id}-${orderId}-${Date.now()}`)
+      .digest('hex');
+
+    // Create the order in pending state
+    const order = await Order.create({
+      _id: orderId,
+      userId: session.user.id,
+      items: items.map(item => ({
+        productId: item._id,
+        sellerId: item.sellerId._id,
+        price: item.price,
+      })),
+      amount: total,
+      status: 'pending',
+      paymentToken,
+    });
 
     // Create item description
     const itemDescription = items.length === 1 
@@ -34,7 +59,7 @@ export async function POST(request: Request) {
     const formData = {
       merchant_id: PAYFAST_MERCHANT_ID,
       merchant_key: PAYFAST_MERCHANT_KEY,
-      return_url: `${process.env.NEXTAUTH_URL}/success?order=${orderId}`,
+      return_url: `${process.env.NEXTAUTH_URL}/success?order=${orderId}&token=${paymentToken}`,
       cancel_url: `${process.env.NEXTAUTH_URL}/cart`,
       notify_url: `${process.env.NEXTAUTH_URL}/api/payfast/notify`,
       name_first: session.user.name?.split(' ')[0] || '',
@@ -43,9 +68,8 @@ export async function POST(request: Request) {
       m_payment_id: orderId,
       amount: total.toFixed(2),
       item_name: itemDescription,
-      item_description: `Order ${orderId}`,
-      custom_str1: JSON.stringify(items.map(item => item._id)),
-      custom_str2: session.user.id,
+      custom_str1: session.user.id,
+      custom_str2: paymentToken,
     };
 
     return NextResponse.json({
