@@ -1,40 +1,72 @@
 import mongoose from 'mongoose';
 
-export interface IOrder {
-  userId: mongoose.Types.ObjectId;
+interface OrderItem {
   productId: mongoose.Types.ObjectId;
   sellerId: mongoose.Types.ObjectId;
+  price: number;
+}
+
+export interface IOrder {
+  _id: string;
+  userId: mongoose.Types.ObjectId;
+  items: OrderItem[];
   amount: number;
-  paymentId: string;
+  paymentId?: string;
+  paymentToken: string;
   status: 'pending' | 'completed' | 'failed';
   createdAt: Date;
   updatedAt: Date;
 }
 
-const orderSchema = new mongoose.Schema<IOrder>({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: [true, 'Please provide a user ID'],
-  },
+const orderItemSchema = new mongoose.Schema({
   productId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: 'ObjectId',
     ref: 'Product',
-    required: [true, 'Please provide a product ID'],
+    required: [true, 'Product ID is required'],
   },
   sellerId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: 'ObjectId',
     ref: 'User',
-    required: [true, 'Please provide a seller ID'],
+    required: [true, 'Seller ID is required'],
+  },
+  price: {
+    type: Number,
+    required: [true, 'Price is required'],
+    min: [0, 'Price cannot be negative'],
+  },
+}, { _id: false });
+
+const orderSchema = new mongoose.Schema({
+  _id: {
+    type: String,
+    required: true,
+  },
+  userId: {
+    type: 'ObjectId',
+    ref: 'User',
+    required: [true, 'User ID is required'],
+  },
+  items: {
+    type: [orderItemSchema],
+    required: [true, 'Order items are required'],
+    validate: {
+      validator: function(items: OrderItem[]) {
+        return items.length > 0;
+      },
+      message: 'Order must contain at least one item',
+    },
   },
   amount: {
     type: Number,
-    required: [true, 'Please provide an amount'],
+    required: [true, 'Total amount is required'],
     min: [0, 'Amount cannot be negative'],
   },
   paymentId: {
     type: String,
-    required: [true, 'Please provide a payment ID'],
+  },
+  paymentToken: {
+    type: String,
+    required: [true, 'Payment token is required'],
   },
   status: {
     type: String,
@@ -43,11 +75,28 @@ const orderSchema = new mongoose.Schema<IOrder>({
   },
 }, {
   timestamps: true,
+  _id: false, // Disable auto _id since we're providing our own
+  strict: true,
 });
 
 // Create indexes for better query performance
-orderSchema.index({ userId: 1 });
-orderSchema.index({ sellerId: 1 });
+orderSchema.index({ userId: 1, createdAt: -1 });
 orderSchema.index({ status: 1 });
+orderSchema.index({ paymentToken: 1 });
 
-export default mongoose.models.Order || mongoose.model<IOrder>('Order', orderSchema); 
+// Add a pre-save hook to validate the total amount
+orderSchema.pre('save', function(next) {
+  const order = this;
+  const calculatedTotal = order.items.reduce((sum, item) => sum + item.price, 0);
+  
+  if (Math.abs(calculatedTotal - order.amount) > 0.01) {
+    next(new Error('Order total does not match sum of items'));
+  } else {
+    next();
+  }
+});
+
+// Clear existing model if it exists to prevent OverwriteModelError
+mongoose.models = {};
+
+export default mongoose.model<IOrder>('Order', orderSchema); 

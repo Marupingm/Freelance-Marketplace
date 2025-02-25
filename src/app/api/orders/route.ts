@@ -32,9 +32,14 @@ export async function GET(req: Request) {
     }
 
     const orders = await Order.find(query)
-      .populate('productId')
-      .populate('userId', 'name email')
-      .populate('sellerId', 'name email')
+      .populate({
+        path: 'items.productId',
+        select: 'title fileUrl price'
+      })
+      .populate({
+        path: 'items.sellerId',
+        select: 'name'
+      })
       .sort({ createdAt: -1 });
 
     return NextResponse.json(orders);

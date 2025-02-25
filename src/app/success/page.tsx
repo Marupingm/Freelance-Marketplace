@@ -6,21 +6,27 @@ import { Check, Download, ShoppingBag, AlertCircle } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 
-interface OrderDetails {
-  _id: string;
-  status: string;
-  amount: number;
-  paymentToken: string;
+interface OrderItem {
   productId: {
     _id: string;
     title: string;
     fileUrl: string;
+    price: number;
   };
   sellerId: {
     _id: string;
     name: string;
     email: string;
   };
+  price: number;
+}
+
+interface OrderDetails {
+  _id: string;
+  status: string;
+  amount: number;
+  paymentToken: string;
+  items: OrderItem[];
   createdAt: string;
 }
 
@@ -70,12 +76,6 @@ export default function Success() {
         }
 
         const data = await response.json();
-        
-        // Verify the payment token matches
-        if (data.paymentToken !== token) {
-          throw new Error('Invalid payment verification');
-        }
-
         setOrder(data);
         toast.success('Order details loaded successfully');
       } catch (error) {
@@ -90,21 +90,21 @@ export default function Success() {
     fetchOrder();
   }, [searchParams, router, authStatus]);
 
-  const handleDownload = async () => {
-    if (!order || downloadStarted) return;
+  const handleDownload = async (fileUrl: string, title: string) => {
+    if (downloadStarted) return;
     
     try {
       setDownloadStarted(true);
       toast.loading('Preparing download...');
       
-      const response = await fetch(order.productId.fileUrl);
+      const response = await fetch(fileUrl);
       if (!response.ok) throw new Error('Failed to download file');
       
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${order.productId.title}.zip`;
+      a.download = `${title}.zip`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -208,21 +208,23 @@ export default function Success() {
             <div className="bg-gray-50 rounded-lg p-6 mb-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Download Your Products</h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-white rounded-lg">
-                  <span className="text-gray-900">{order.productId.title}</span>
-                  <button
-                    onClick={handleDownload}
-                    disabled={downloadStarted}
-                    className={`flex items-center gap-2 ${
-                      downloadStarted 
-                        ? 'text-gray-400 cursor-not-allowed' 
-                        : 'text-blue-600 hover:text-blue-700'
-                    }`}
-                  >
-                    <Download size={20} />
-                    {downloadStarted ? 'Downloading...' : 'Download'}
-                  </button>
-                </div>
+                {order.items.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-white rounded-lg">
+                    <span className="text-gray-900">{item.productId.title}</span>
+                    <button
+                      onClick={() => handleDownload(item.productId.fileUrl, item.productId.title)}
+                      disabled={downloadStarted}
+                      className={`flex items-center gap-2 ${
+                        downloadStarted 
+                          ? 'text-gray-400 cursor-not-allowed' 
+                          : 'text-blue-600 hover:text-blue-700'
+                      }`}
+                    >
+                      <Download size={20} />
+                      {downloadStarted ? 'Downloading...' : 'Download'}
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
 

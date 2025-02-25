@@ -53,10 +53,15 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
+        // Initial sign in
         token.role = user.role;
         token.id = user.id;
+      } else if (trigger === "update" && session) {
+        // Update token if session is updated
+        token.role = session.user.role;
+        token.id = session.user.id;
       }
       return token;
     },
@@ -66,6 +71,21 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = token.id;
       }
       return session;
+    }
+  },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60, // 30 days - match session maxAge
+  },
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 30 * 24 * 60 * 60 // 30 days - match session maxAge
+      }
     }
   },
   secret: process.env.NEXTAUTH_SECRET,

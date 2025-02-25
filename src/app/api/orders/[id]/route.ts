@@ -66,42 +66,44 @@ export async function GET(
     const url = new URL(req.url);
     const token = url.searchParams.get('token');
 
-    if (!token || token.length !== 64) {
-      console.error('Invalid payment token format');
+    if (!token) {
+      console.error('No payment token provided');
       return NextResponse.json(
-        { error: 'Invalid payment token format' },
+        { error: 'Payment token is required' },
         { status: 400 }
       );
     }
 
     console.log('Fetching order:', orderId, 'for user:', session.user.id);
 
-    // Find the order with comprehensive validation
-    const rawOrder = await Order.findOne({ 
+    // Find the order and populate necessary fields
+    const order = await Order.findOne({ 
       _id: orderId,
-      userId: session.user.id,
       paymentToken: token
     })
-    .populate('productId', 'title fileUrl price')
-    .populate('sellerId', 'name email level')
-    .lean();
+    .populate({
+      path: 'items.productId',
+      select: 'title fileUrl price'
+    })
+    .populate({
+      path: 'items.sellerId',
+      select: 'name email'
+    });
 
-    if (!rawOrder || !isValidOrder(rawOrder)) {
-      console.error('Order not found or unauthorized access:', orderId);
+    if (!order) {
+      console.error('Order not found:', orderId);
       return NextResponse.json(
-        { error: 'Order not found or unauthorized access' },
+        { error: 'Order not found' },
         { status: 404 }
       );
     }
 
-    const order = rawOrder as OrderDocument;
-
-    // Validate order status
-    if (order.status !== 'completed' && order.status !== 'pending') {
-      console.error('Invalid order status:', order.status);
+    // Verify the order belongs to the user
+    if (order.userId.toString() !== session.user.id) {
+      console.error('Unauthorized access to order:', orderId);
       return NextResponse.json(
-        { error: 'Order is not in a valid state' },
-        { status: 400 }
+        { error: 'Unauthorized access to order' },
+        { status: 403 }
       );
     }
 
@@ -110,10 +112,7 @@ export async function GET(
   } catch (error: any) {
     console.error('Error fetching order:', error);
     return NextResponse.json(
-      { 
-        error: 'Failed to fetch order',
-        details: error.message 
-      },
+      { error: error.message || 'Failed to fetch order' },
       { status: 500 }
     );
   }
