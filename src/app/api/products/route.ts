@@ -9,9 +9,16 @@ export async function GET(req: Request) {
   console.log('Fetching products...');
   try {
     const { searchParams } = new URL(req.url);
+    
+    // Get all filter parameters
     const category = searchParams.get('category');
     const search = searchParams.get('search');
     const sellerId = searchParams.get('sellerId');
+    const sort = searchParams.get('sort') || 'default';
+    const level = searchParams.get('level');
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    const features = searchParams.getAll('features'); // Get all selected features
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
 
     console.log('Connecting to database...');
@@ -29,18 +36,56 @@ export async function GET(req: Request) {
       ];
     }
 
+    // Add category filter
     if (category) {
       query.category = category;
     }
 
+    // Add seller filter
     if (sellerId) {
       query.sellerId = sellerId;
     }
 
+    // Add price range filter
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = parseFloat(minPrice);
+      if (maxPrice) query.price.$lte = parseFloat(maxPrice);
+    }
+
+    // Add level filter by joining with User model
+    if (level) {
+      query['sellerId.level'] = level;
+    }
+
+    // Add features filter
+    if (features.length > 0) {
+      // Assuming features are stored in the description
+      query.description = {
+        $all: features.map(feature => new RegExp(feature, 'i'))
+      };
+    }
+
     console.log('Executing query:', query);
+
+    // Create base query
     let productsQuery = Product.find(query)
-      .populate('sellerId', 'name level')
-      .sort({ rating: -1, createdAt: -1 });
+      .populate('sellerId', 'name level');
+
+    // Apply sorting
+    switch (sort) {
+      case 'price_asc':
+        productsQuery = productsQuery.sort({ price: 1 });
+        break;
+      case 'price_desc':
+        productsQuery = productsQuery.sort({ price: -1 });
+        break;
+      case 'rating':
+        productsQuery = productsQuery.sort({ rating: -1 });
+        break;
+      default:
+        productsQuery = productsQuery.sort({ createdAt: -1 });
+    }
 
     // Apply limit if specified
     if (limit) {
@@ -48,7 +93,6 @@ export async function GET(req: Request) {
     }
 
     const products = await productsQuery;
-    
     console.log(`Found ${products.length} products`);
 
     return NextResponse.json(products);

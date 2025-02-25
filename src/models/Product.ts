@@ -69,7 +69,20 @@ const productSchema = new mongoose.Schema<IProduct>({
   category: {
     type: String,
     required: [true, 'Please provide a category'],
-    enum: ['Graphic', 'Link Building', 'Music & Animation', 'SEO & Research', 'Technology', 'Traffic'],
+    enum: [
+      'UI/UX Design',
+      'Web Development',
+      'Mobile Development',
+      'Digital Marketing',
+      'Software Solutions',
+      'AI & Machine Learning',
+      'DevOps & Cloud',
+      'Cybersecurity',
+      'Data Science',
+      'Graphic Design',
+      'Content Creation',
+      'E-commerce Solutions'
+    ],
   },
   reviews: [reviewSchema],
   rating: {

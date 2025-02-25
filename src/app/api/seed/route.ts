@@ -10,7 +10,10 @@ export async function POST(req: Request) {
   }
 
   try {
+    console.log('Starting database seeding...');
     const result = await seedDatabase();
+    console.log('Database seeding completed:', result);
+    
     return NextResponse.json(
       { 
         message: 'Database seeded successfully',
@@ -20,8 +23,13 @@ export async function POST(req: Request) {
     );
   } catch (error: any) {
     console.error('Seeding error:', error);
+    console.error('Error stack:', error.stack);
+    
     return NextResponse.json(
-      { error: error.message || 'Failed to seed database' },
+      { 
+        error: error.message || 'Failed to seed database',
+        details: error.stack
+      },
       { status: 500 }
     );
   }

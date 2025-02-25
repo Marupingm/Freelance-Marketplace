@@ -58,7 +58,7 @@ export default function ProductDetail() {
         setProduct(data);
 
         // Fetch related products
-        const relatedResponse = await fetch(`/api/products?category=${data.category}&limit=4`);
+        const relatedResponse = await fetch(`/api/products?category=${data.category}&limit=6`);
         if (relatedResponse.ok) {
           const relatedData = await relatedResponse.json();
           setRelatedProducts(relatedData.filter((p: Product) => p._id !== id));

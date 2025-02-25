@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["dub1"],
+  "env": {
+    "MONGODB_URI": "mongodb+srv://malatjithabang353:Mokwape4@freelancemarketplace.yudaz.mongodb.net/?retryWrites=true&w=majority&appName=freelancemarketplace",
+    "NEXTAUTH_SECRET": "marketplace_jwt_secret_key_2024_secure_and_long_enough_for_production",
+    "PAYFAST_MERCHANT_ID": "10037091",
+    "PAYFAST_MERCHANT_KEY": "mh8eecg0un9fh",
+    "PAYFAST_PASSPHRASE": "Marupingllat_3"
+  }
+} 

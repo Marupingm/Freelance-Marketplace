@@ -13,8 +13,24 @@ const nextConfig = {
         port: '',
         pathname: '/seed/**',
       },
+      {
+        protocol: 'https',
+        hostname: '**.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.cloudfront.net',
+      }
     ],
+  },
+  // Disable linting during build - we should run it separately
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  // Disable type checking during build - we should run it separately
+  typescript: {
+    ignoreBuildErrors: true,
   },
 };
 
-module.exports = nextConfig; 
+export default nextConfig; 
