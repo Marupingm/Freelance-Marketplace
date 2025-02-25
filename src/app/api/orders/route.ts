@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import connectDB from '@/lib/db';
 import Order from '@/models/Order';
+import mongoose from 'mongoose';
 
 export async function GET(req: Request) {
   try {
@@ -17,19 +18,24 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type'); // 'purchases' or 'sales'
 
+    console.log('Fetching orders for user:', session.user.id, 'type:', type);
+
     await connectDB();
 
     let query = {};
     if (type === 'purchases') {
-      query = { userId: session.user.id };
+      query = { userId: new mongoose.Types.ObjectId(session.user.id) };
     } else if (type === 'sales' && session.user.role === 'freelancer') {
-      query = { sellerId: session.user.id };
+      query = { 'items.sellerId': new mongoose.Types.ObjectId(session.user.id) };
     } else {
+      console.error('Invalid request type:', type);
       return NextResponse.json(
         { error: 'Invalid request type' },
         { status: 400 }
       );
     }
+
+    console.log('Executing query:', JSON.stringify(query));
 
     const orders = await Order.find(query)
       .populate({
@@ -42,9 +48,17 @@ export async function GET(req: Request) {
       })
       .sort({ createdAt: -1 });
 
+    console.log('Found orders:', orders.length);
+
+    if (!orders) {
+      console.log('No orders found');
+      return NextResponse.json([]);
+    }
+
     return NextResponse.json(orders);
   } catch (error: any) {
     console.error('Error fetching orders:', error);
+    console.error('Error stack:', error.stack);
     return NextResponse.json(
       { error: error.message || 'Failed to fetch orders' },
       { status: 500 }
@@ -63,9 +77,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const { productId, sellerId, amount } = await req.json();
+    const { items, amount } = await req.json();
 
-    if (!productId || !sellerId || !amount) {
+    if (!items || !amount) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -74,12 +88,13 @@ export async function POST(req: Request) {
 
     await connectDB();
 
+    const orderId = `ORDER-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const order = await Order.create({
-      userId: session.user.id,
-      productId,
-      sellerId,
+      _id: orderId,
+      userId: new mongoose.Types.ObjectId(session.user.id),
+      items,
       amount,
-      paymentId: 'TEST_' + Date.now(),
+      paymentToken: Math.random().toString(36).substr(2),
       status: 'completed',
     });
 

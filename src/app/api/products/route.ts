@@ -4,7 +4,7 @@ import connectDB from '@/lib/db';
 import Product from '@/models/Product';
 import { authOptions } from '@/lib/auth';
 
-// GET /api/products - Get all products or filter by category
+// GET /api/products - Get all products or filter by category/search
 export async function GET(req: Request) {
   console.log('Fetching products...');
   try {
@@ -20,12 +20,17 @@ export async function GET(req: Request) {
 
     let query: any = {};
 
-    if (category) {
-      query.category = category;
+    // Add text search if search parameter is provided
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { category: { $regex: search, $options: 'i' } }
+      ];
     }
 
-    if (search) {
-      query.$text = { $search: search };
+    if (category) {
+      query.category = category;
     }
 
     if (sellerId) {
@@ -35,9 +40,9 @@ export async function GET(req: Request) {
     console.log('Executing query:', query);
     let productsQuery = Product.find(query)
       .populate('sellerId', 'name level')
-      .sort({ createdAt: -1 });
+      .sort({ rating: -1, createdAt: -1 });
 
-    // Apply limit if specified (used for homepage)
+    // Apply limit if specified
     if (limit) {
       productsQuery = productsQuery.limit(limit);
     }

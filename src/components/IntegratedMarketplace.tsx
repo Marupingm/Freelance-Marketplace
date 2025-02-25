@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Star, Heart, Search, PenTool, Building2, Music, Network, BarChart3, ShoppingCart } from 'lucide-react';
-import { AuroraText } from "@/components/ui/aurora-text";
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
+import { CustomButton } from '@/components/ui/custom-button';
+import { Meteors } from '@/components/ui/meteors';
+import { SearchBar } from '@/components/ui/search-bar';
 
 // Price ranges in ZAR
 const PRICE_RANGES = {
@@ -140,49 +142,28 @@ export default function IntegratedMarketplace() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-white" style={{ paddingTop: '10rem', paddingBottom: '5rem' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative bg-white overflow-hidden" style={{ paddingTop: '10rem', paddingBottom: '5rem' }}>
+        <div className="absolute inset-0">
+          <Meteors number={40} />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="relative">
-            {/* Cart Icon */}
-            <div className="absolute top-0 right-0">
-              <button
-                onClick={() => router.push('/cart')}
-                className="flex items-center gap-2 p-2 text-gray-600 hover:text-blue-600"
-              >
-                <ShoppingCart size={24} />
-                {state.items.length > 0 && (
-                  <span className="bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {state.items.length}
-                  </span>
-                )}
-              </button>
-            </div>
-            
             <div className="text-center space-y-8">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900">
-                Find Expert Freelancers<br />
-                <span className="text-blue-600 mt-2 block">
-                  <AuroraText>For Your Next Project</AuroraText>
-                </span>
-              </h1>
+              <div className="relative">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900">
+                  Find Expert Freelancers<br />
+                  <span className="text-primary mt-2 block">
+                    For Your Next Project
+                  </span>
+                </h1>
+              </div>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
                 Connect with skilled professionals from around the world
               </p>
               
               {/* Search Bar */}
-              <div className="max-w-3xl mx-auto">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <input
-                    type="text"
-                    placeholder="Search for skills, projects, or freelancers..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="flex-1 px-6 py-4 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <button className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 shadow-sm font-medium">
-                    Search
-                  </button>
-                </div>
+              <div className="max-w-3xl mx-auto relative z-10">
+                <SearchBar />
               </div>
             </div>
           </div>
@@ -390,8 +371,7 @@ export default function IntegratedMarketplace() {
                             </div>
                             <span className="font-bold text-gray-900">{formatPrice(product.price)}</span>
                           </div>
-                          <button 
-                            className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                          <CustomButton 
                             onClick={(e) => {
                               e.stopPropagation();
                               dispatch({
@@ -399,9 +379,12 @@ export default function IntegratedMarketplace() {
                                 payload: product
                               });
                             }}
+                            className="mt-4"
+                            showIcon={true}
+                            isCartButton={true}
                           >
                             Add to Cart
-                          </button>
+                          </CustomButton>
                         </div>
                       </div>
                     ))}

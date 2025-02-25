@@ -94,14 +94,14 @@ export default function Register() {
 
   return (
     <div className={`min-h-screen flex items-center justify-center px-4 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <div className={`max-w-md w-full space-y-8 p-8 rounded-xl shadow-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+      <div className={`max-w-md w-full space-y-8 p-8 rounded-xl border border-gray-200 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
         <div>
           <h2 className={`mt-6 text-center text-3xl font-extrabold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
             Create your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Already have an account?{' '}
-            <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link href="/login" className="font-medium text-primary hover:text-primary/80">
               Sign in
             </Link>
           </p>
@@ -126,7 +126,7 @@ export default function Register() {
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className={`mt-1 appearance-none relative block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                className={`mt-1 appearance-none relative block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
                   theme === 'dark' 
                     ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' 
                     : 'border-gray-300 placeholder-gray-400 text-gray-900'
@@ -147,7 +147,7 @@ export default function Register() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className={`mt-1 appearance-none relative block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                className={`mt-1 appearance-none relative block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
                   theme === 'dark' 
                     ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' 
                     : 'border-gray-300 placeholder-gray-400 text-gray-900'
@@ -167,7 +167,7 @@ export default function Register() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className={`mt-1 appearance-none relative block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                className={`mt-1 appearance-none relative block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
                   theme === 'dark' 
                     ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' 
                     : 'border-gray-300 placeholder-gray-400 text-gray-900'
@@ -187,7 +187,7 @@ export default function Register() {
                 required
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`mt-1 appearance-none relative block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                className={`mt-1 appearance-none relative block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
                   theme === 'dark' 
                     ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' 
                     : 'border-gray-300 placeholder-gray-400 text-gray-900'
@@ -205,7 +205,7 @@ export default function Register() {
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
-                className={`mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                className={`mt-1 block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
                   theme === 'dark' 
                     ? 'border-gray-600 bg-gray-700 text-white' 
                     : 'border-gray-300 text-gray-900'
@@ -221,7 +221,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary ${
                 loading ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Ubuntu } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
 import { ThemeProvider } from '@/context/ThemeContext';
@@ -8,6 +8,11 @@ import { CartProvider } from '@/context/CartContext';
 import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({ subsets: ["latin"] });
+const ubuntu = Ubuntu({ 
+  weight: ['400', '700'],
+  subsets: ['latin'],
+  variable: '--font-ubuntu',
+});
 
 export const metadata: Metadata = {
   title: "Marketplace",
@@ -21,16 +26,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <NextAuthProvider>
-          <ThemeProvider>
+      <head>
+        <title>Digital Marketplace</title>
+        <meta name="description" content="Digital marketplace for digital products" />
+      </head>
+      <body className={`${inter.className} ${ubuntu.variable}`}>
+        <ThemeProvider>
+          <NextAuthProvider>
             <CartProvider>
               <Navigation />
               {children}
               <Toaster position="top-right" />
             </CartProvider>
-          </ThemeProvider>
-        </NextAuthProvider>
+          </NextAuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Trash2, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useState } from 'react';
+import { CustomButton } from '@/components/ui/custom-button';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
@@ -138,12 +139,12 @@ export default function Cart() {
             </div>
             <h2 className="text-2xl font-bold text-gray-900">Your cart is empty</h2>
             <p className="mt-4 text-gray-600">Add some products to your cart to get started.</p>
-            <button
+            <CustomButton
               onClick={() => router.push('/')}
-              className="mt-6 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              className="mt-6"
             >
               Browse Products
-            </button>
+            </CustomButton>
           </div>
         </div>
       </div>
@@ -196,34 +197,31 @@ export default function Cart() {
               </div>
 
               <div className="flex justify-between gap-4">
-                <button
+                <CustomButton
                   onClick={() => {
                     dispatch({ type: 'CLEAR_CART' });
                     toast.success('Cart cleared');
                   }}
                   disabled={isProcessing}
-                  className={`px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors ${
-                    isProcessing ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  className="!w-auto"
+                  showIcon={false}
                 >
                   Clear Cart
-                </button>
-                <button
+                </CustomButton>
+                <CustomButton
                   onClick={() => handleCheckout()}
                   disabled={isProcessing}
-                  className={`flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 ${
-                    isProcessing ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  className="flex-1"
                 >
                   {isProcessing ? (
                     <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
                       Processing...
                     </>
                   ) : (
                     'Proceed to Checkout'
                   )}
-                </button>
+                </CustomButton>
               </div>
             </div>
           </div>

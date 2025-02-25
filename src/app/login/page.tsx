@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useTheme } from '@/context/ThemeContext';
+import { CustomButton } from '@/components/ui/custom-button';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -43,14 +44,14 @@ export default function Login() {
 
   return (
     <div className={`min-h-screen flex items-center justify-center px-4 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <div className={`max-w-md w-full space-y-8 p-8 rounded-xl shadow-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+      <div className={`max-w-md w-full space-y-8 p-8 rounded-xl border border-gray-200 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
         <div>
           <h2 className={`mt-6 text-center text-3xl font-extrabold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
             Sign in to your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{' '}
-            <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link href="/register" className="font-medium text-primary hover:text-primary/80">
               create a new account
             </Link>
           </p>
@@ -127,22 +128,21 @@ export default function Login() {
             </div>
 
             <div className="text-sm">
-              <Link href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link href="/forgot-password" className="font-medium text-primary hover:text-primary/80">
                 Forgot your password?
               </Link>
             </div>
           </div>
 
           <div>
-            <button
+            <CustomButton
               type="submit"
               disabled={loading}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                loading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={loading ? 'opacity-50 cursor-not-allowed' : ''}
+              showIcon={!loading}
             >
               {loading ? 'Signing in...' : 'Sign in'}
-            </button>
+            </CustomButton>
           </div>
         </form>
       </div>

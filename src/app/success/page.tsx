@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Check, Download, ShoppingBag, AlertCircle } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
+import { CustomButton } from '@/components/ui/custom-button';
 
 interface OrderItem {
   productId: {
@@ -148,12 +149,11 @@ export default function Success() {
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Order Error</h2>
               <p className="text-gray-600 mb-6">{error || 'We couldn\'t find the order you\'re looking for.'}</p>
-              <button
+              <CustomButton
                 onClick={() => router.push('/')}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Return to Home
-              </button>
+              </CustomButton>
             </div>
           </div>
         </div>
@@ -211,37 +211,32 @@ export default function Success() {
                 {order.items.map((item, index) => (
                   <div key={index} className="flex items-center justify-between p-4 bg-white rounded-lg">
                     <span className="text-gray-900">{item.productId.title}</span>
-                    <button
+                    <CustomButton
                       onClick={() => handleDownload(item.productId.fileUrl, item.productId.title)}
                       disabled={downloadStarted}
-                      className={`flex items-center gap-2 ${
-                        downloadStarted 
-                          ? 'text-gray-400 cursor-not-allowed' 
-                          : 'text-blue-600 hover:text-blue-700'
-                      }`}
+                      className="!w-auto"
                     >
-                      <Download size={20} />
                       {downloadStarted ? 'Downloading...' : 'Download'}
-                    </button>
+                    </CustomButton>
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="flex gap-4 justify-center">
-              <button
+              <CustomButton
                 onClick={() => router.push('/dashboard')}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                className="!w-auto"
               >
-                <ShoppingBag size={20} />
                 View Order History
-              </button>
-              <button
+              </CustomButton>
+              <CustomButton
                 onClick={() => router.push('/')}
-                className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors"
+                className="!w-auto"
+                showIcon={false}
               >
                 Continue Shopping
-              </button>
+              </CustomButton>
             </div>
           </div>
         </div>
