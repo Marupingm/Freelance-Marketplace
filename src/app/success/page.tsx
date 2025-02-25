@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Check, Download, ShoppingBag, AlertCircle } from 'lucide-react';
 import { useSession } from 'next-auth/react';
@@ -31,7 +31,7 @@ interface OrderDetails {
   createdAt: string;
 }
 
-export default function Success() {
+function SuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { data: session, status: authStatus } = useSession();
@@ -242,5 +242,22 @@ export default function Success() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Success() {
+  return (
+    <Suspense 
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <SuccessContent />
+    </Suspense>
   );
 } 
