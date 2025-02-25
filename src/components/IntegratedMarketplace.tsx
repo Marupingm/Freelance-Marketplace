@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import Image from 'next/image';
 import { Star, Heart, Search, PenTool, Building2, Music, Network, BarChart3, ShoppingCart, Loader2, Filter } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -83,7 +83,7 @@ const features = [
   "Support"
 ];
 
-export default function IntegratedMarketplace() {
+function MarketplaceContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { state: cartState, dispatch: cartDispatch } = useCart();
@@ -320,5 +320,17 @@ export default function IntegratedMarketplace() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function IntegratedMarketplace() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <MarketplaceContent />
+    </Suspense>
   );
 } 
