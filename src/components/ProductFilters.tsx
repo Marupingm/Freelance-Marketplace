@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, memo } from 'react';
+import { useState, useEffect, useCallback, memo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Sliders, X, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -8,7 +8,7 @@ interface ProductFiltersProps {
   onFiltersChange: (filters: any) => void;
 }
 
-export const ProductFilters = memo(function ProductFilters({ onFiltersChange }: ProductFiltersProps) {
+function ProductFiltersContent({ onFiltersChange }: ProductFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -233,5 +233,17 @@ export const ProductFilters = memo(function ProductFilters({ onFiltersChange }: 
         </div>
       </div>
     </div>
+  );
+}
+
+export const ProductFilters = memo(function ProductFilters(props: ProductFiltersProps) {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center h-12">
+        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <ProductFiltersContent {...props} />
+    </Suspense>
   );
 }); 

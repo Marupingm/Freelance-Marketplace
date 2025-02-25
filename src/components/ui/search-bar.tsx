@@ -1,4 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+"use client";
+
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -11,7 +13,7 @@ interface Product {
   category: string;
 }
 
-export function SearchBar() {
+function SearchBarContent() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -132,5 +134,17 @@ export function SearchBar() {
         </div>
       )}
     </div>
+  );
+}
+
+export function SearchBar() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center h-12">
+        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <SearchBarContent />
+    </Suspense>
   );
 } 
