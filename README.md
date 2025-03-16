@@ -36,7 +36,7 @@ A full-featured digital marketplace platform that connects freelancers with clie
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/freelance-marketplace.git
+   git clone https://github.com/Marupingm/freelance-marketplace.git
    cd freelance-marketplace
    ```
 
