@@ -2,7 +2,20 @@
 
 A full-featured digital marketplace platform that connects freelancers with clients. Built with Next.js, React, MongoDB, and Tailwind CSS.
 
-![Freelance Marketplace](public/marketplace-preview.png)
+## Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Folder Structure](#folder-structure)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [API Routes](#api-routes)
+- [Usage Guide](#usage-guide)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
 ## Features
 
@@ -14,16 +27,43 @@ A full-featured digital marketplace platform that connects freelancers with clie
 - **Secure Payments**: Integration with PayFast payment gateway
 - **User Dashboard**: Manage orders, purchases, and account details
 - **Freelancer Dashboard**: Manage products, track sales, and update profile
+- **Product Reviews**: Rate and review purchased products
+- **Multi-level Freelancer System**: Progression-based freelancer levels
 
 ## Tech Stack
 
 - **Frontend**: Next.js 15, React 19
-- **Styling**: Tailwind CSS
+- **Styling**: Tailwind CSS, Framer Motion (animations)
 - **Database**: MongoDB with Mongoose ODM
 - **Authentication**: NextAuth.js
 - **State Management**: React Context API
-- **Animation**: Framer Motion
-- **Icons**: Lucide React
+- **UI Components**: Custom components with Radix UI primitives
+- **Icons**: Lucide React, React Icons
+- **Testing**: [Placeholder for testing framework]
+
+## Folder Structure
+
+```
+src/
+├── app/                 # Next.js app router
+│   ├── api/             # API routes for backend functionality
+│   ├── cart/            # Shopping cart page
+│   ├── dashboard/       # User/Freelancer dashboard
+│   ├── freelancers/     # Freelancer listings and profiles
+│   ├── login/           # Authentication pages
+│   ├── products/        # Product listings and details
+│   ├── register/        # User registration
+│   └── success/         # Payment success page
+├── components/          # Reusable UI components
+│   ├── ui/              # Basic UI elements
+│   └── ...              # Feature-specific components
+├── context/             # React Context providers for state management
+├── hooks/               # Custom React hooks
+├── lib/                 # Utility functions and configurations
+├── models/              # Mongoose data models (User, Product, Order)
+├── providers/           # Next.js providers
+└── scripts/             # Database seeding and utility scripts
+```
 
 ## Getting Started
 
@@ -31,6 +71,7 @@ A full-featured digital marketplace platform that connects freelancers with clie
 
 - Node.js 18.0.0 or higher
 - MongoDB instance (local or Atlas)
+- npm or yarn package manager
 
 ### Installation
 
@@ -50,6 +91,8 @@ A full-featured digital marketplace platform that connects freelancers with clie
    MONGODB_URI=your_mongodb_connection_string
    NEXTAUTH_SECRET=your_nextauth_secret
    NEXTAUTH_URL=http://localhost:3000
+   PAYFAST_MERCHANT_ID=your_payfast_merchant_id
+   PAYFAST_MERCHANT_KEY=your_payfast_merchant_key
    ```
 
 4. Seed the database with sample data:
@@ -64,27 +107,6 @@ A full-featured digital marketplace platform that connects freelancers with clie
 
 6. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## Project Structure
-
-```
-src/
-├── app/                 # Next.js app router
-│   ├── api/             # API routes
-│   ├── cart/            # Cart page
-│   ├── dashboard/       # User/Freelancer dashboard
-│   ├── freelancers/     # Freelancer listings
-│   ├── login/           # Authentication pages
-│   ├── products/        # Product listings and details
-│   ├── register/        # User registration
-│   └── success/         # Payment success page
-├── components/          # UI components
-├── context/             # React Context providers
-├── hooks/               # Custom React hooks
-├── lib/                 # Utility functions and configurations
-├── models/              # Mongoose data models
-└── providers/           # Next.js providers
-```
-
 ## API Routes
 
 - `/api/auth/*` - Authentication endpoints (handled by NextAuth.js)
@@ -92,6 +114,41 @@ src/
 - `/api/orders` - Order management
 - `/api/freelancers` - Freelancer-specific endpoints
 - `/api/payfast` - Payment processing
+
+## Usage Guide
+
+### For Clients
+
+1. **Browse Products**:
+   - Use filters to narrow down by category, price range, or freelancer level
+   - View detailed product information and reviews
+
+2. **Purchase Products**:
+   - Add products to cart
+   - Proceed to checkout
+   - Complete payment via PayFast
+
+3. **Manage Orders**:
+   - View purchase history
+   - Leave reviews for purchased products
+   - Contact freelancers for support
+
+### For Freelancers
+
+1. **Create Products**:
+   - Add new digital products or services
+   - Set pricing and descriptions
+   - Upload product files
+
+2. **Manage Products**:
+   - Update existing products
+   - Track sales and earnings
+   - Respond to customer reviews
+
+3. **Update Profile**:
+   - Showcase skills and bio
+   - Track performance metrics
+   - Progress through freelancer levels
 
 ## Deployment
 
@@ -102,13 +159,28 @@ npm run build
 vercel --prod
 ```
 
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+Please ensure your code follows the project's coding standards and includes appropriate tests.
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Acknowledgments
+## Contact
 
-- [Next.js](https://nextjs.org/)
-- [MongoDB](https://www.mongodb.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [NextAuth.js](https://next-auth.js.org/)
+Project Creator - Maruping
+
+Project Link: [https://github.com/Marupingm/freelance-marketplace](https://github.com/Marupingm/freelance-marketplace)
+
+---
+
+Built with ❤️ using Next.js, React, MongoDB, and Tailwind CSS.
